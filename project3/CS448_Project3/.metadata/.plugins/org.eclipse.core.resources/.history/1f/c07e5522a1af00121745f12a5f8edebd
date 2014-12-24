@@ -1,0 +1,98 @@
+package relop;
+
+import global.RID;
+import heap.HeapFile;
+import heap.HeapScan;
+
+/**
+ * Wrapper for heap file scan, the most basic access method. This "iterator"
+ * version takes schema into consideration and generates real tuples.
+ */
+public class FileScan extends Iterator {
+	//private Schema fSchema;
+	private HeapFile hFile;
+	private HeapScan hScan;
+	private RID prevRid;
+
+  /**
+   * Constructs a file scan, given the schema and heap file.
+   */
+  public FileScan(Schema schema, HeapFile file) {
+	  setSchema(schema);
+	  hScan = file.openScan();
+	  this.schema = schema;
+	  hFile = file;
+	  prevRid = new RID();
+  }
+
+  /**
+   * Gives a one-line explanation of the iterator, repeats the call on any
+   * child iterators, and increases the indent depth along the way.
+   */
+  public void explain(int depth) {
+    throw new UnsupportedOperationException("Not implemented");
+  }
+
+  /**
+   * Restarts the iterator, i.e. as if it were just constructed.
+   */
+  public void restart() {
+	  close();
+	  hScan = hFile.openScan();
+  }
+
+  /**
+   * Returns true if the iterator is open; false otherwise.
+   */
+  public boolean isOpen() {
+	  if(hScan == null) {
+		  return false;
+	  } else {
+		  return true;
+	  }
+  }
+
+  /**
+   * Closes the iterator, releasing any resources (i.e. pinned pages).
+   */
+  public void close() {
+	  hScan.close();
+	  hScan = null;
+  }
+
+  /**
+   * Returns true if there are more tuples, false otherwise.
+   */
+  public boolean hasNext() {
+	  return hScan.hasNext();
+  }
+
+  /**
+   * Gets the next tuple in the iteration.
+   * 
+   * @throws IllegalStateException if no more tuples
+   */
+  public Tuple getNext() {
+	  if(hScan != null){
+//		  if(hScan.hasNext()){
+			  byte[] data = hScan.getNext(prevRid);
+			  return new Tuple(getSchema(), data);
+//		  }
+//		  else{
+//			  throw new IllegalStateException("There are no more tuples!");
+//		  }
+	  }
+	  else {
+		  throw new IllegalStateException("There are no more tuples!");
+	  }
+	
+  }
+
+  /**
+   * Gets the RID of the last tuple returned.
+   */
+  public RID getLastRID() {
+	  return prevRid;
+  }
+
+} // public class FileScan extends Iterator

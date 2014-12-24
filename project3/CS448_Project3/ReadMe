@@ -1,0 +1,25 @@
+CS448: Project 3
+Members: Tejesh Kalidindi, Aashay shah and Anand Patel
+
+Passing Test Cases: Test 1, 2 and 3
+
+Work Distributed:
+	Tejesh Kalidindi:
+		1). FileScan
+		2). KeyScan
+		3). IndexScan
+		4). Projection
+
+	Aashay Shah:
+		1). Selection
+		2). SortMergeJoin
+
+	Anand Patel:
+		1). SimpleJoin
+		2). SortMergeJoin
+
+
+Please Note:
+	Result mis-match in Selection.java:
+	The last driver id, 10, does not match the condition but if we return null in getNext when no more tuples match the condition, it gives a null pointer exception in 		iterator at line 69. That is the reason we are printing the driver id 10 in test1 where test selection(Age > 15 AND Age < 65).
+

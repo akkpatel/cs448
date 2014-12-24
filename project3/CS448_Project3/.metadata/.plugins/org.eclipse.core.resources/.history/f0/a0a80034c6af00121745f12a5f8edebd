@@ -1,0 +1,151 @@
+package externalSort;
+
+import relop.FileScan;
+import relop.Iterator;
+import relop.Schema;
+import relop.Tuple;
+
+public class SortMergeJoin extends Iterator {
+
+	private Iterator leftItr;
+	private Iterator rightItr;
+	private Iterator joinItr;
+	private Iterator newRightItr;
+	private int newLCol;
+	private int newRCol; 
+	private int joinLCol;
+	private int joinRCol;
+	private Schema leftSchema;
+	private Schema rightSchema;
+	private Schema joinLSchema;
+	private Schema joinRSchema;
+	private int flag = 0;
+	private Tuple leftTuple;
+	private Tuple rightTuple;
+	private Tuple newTuple;
+	private int join = 0;
+	
+	public SortMergeJoin(Iterator left, Iterator right, Integer lcol, Integer rcol) {
+		// TODO Auto-generated constructor stub
+		this.leftItr=left;
+		this.rightItr=right;
+		this.newLCol=lcol;
+		this.newRCol=rcol;
+		this.leftSchema=leftItr.getSchema();
+		this.rightSchema=rightItr.getSchema();
+		schema=Schema.join(leftSchema, rightSchema);
+		rightTuple = rightItr.getNext();
+
+	}
+
+	public SortMergeJoin(SortMergeJoin join1, Iterator antRight, int i, int j) {
+		// TODO Auto-generated constructor stub
+		System.out.println("in the second constructor");
+		this.newRightItr=antRight;
+		this.joinLCol=i;
+		this.joinRCol=j;
+		this.joinLSchema = join1.getSchema();
+		this.joinRSchema = antRight.getSchema();
+		this.newRightItr = antRight;
+		this.joinItr = join1;
+		schema = Schema.join(joinLSchema, joinRSchema);
+		join = 1;
+	}
+
+	@Override
+	public void explain(int depth) {
+		// TODO Auto-generated method stub
+
+	}
+
+	@Override
+	public void restart() {
+		// TODO Auto-generated method stub
+		System.out.println("in restart");
+		if(join == 1){
+			joinItr.restart();
+		}else{
+			leftItr.restart();
+			rightItr.restart();
+		}
+	}
+
+	@Override
+	public boolean isOpen() {
+		// TODO Auto-generated method stub
+		System.out.println("in sortMerge is open");
+		if(flag == 1){
+			return true;
+		}
+		return false;
+	}
+
+	@Override
+	public void close() {
+		// TODO Auto-generated method stub
+		flag = 0;
+	//	leftItr.close();
+	//	rightItr.close();
+		System.out.println("in sortMerge close");
+
+	}
+
+	@Override
+	public boolean hasNext() {
+		// TODO Auto-generated method stub
+		System.out.println("in sortMerge has Next");
+		if(join == 1){
+			return 
+		}else{
+			return leftItr.hasNext();
+		}
+	}
+
+	@Override
+	public Tuple getNext() {
+		// TODO Auto-generated method stub
+		System.out.println("in get NExt");
+		int leftTupleValue = 0;
+		int rightTupleValue = 0;
+		boolean check = false;
+		int tempI = 0;
+		int lT = 0;
+		while(true){
+			if(hasNext()){
+				leftTuple = leftItr.getNext();
+				lT = 1;
+			}
+			while(lT==1){
+			//	System.out.println("in the while loop");
+				leftTupleValue = (Integer) leftTuple.getField(newLCol);
+				rightTupleValue = (Integer) rightTuple.getField(newRCol);
+				//System.out.println("left " + leftTupleValue + "right " + rightTupleValue);
+				if(leftTupleValue == rightTupleValue){
+				//	System.out.println("in the =");
+					newTuple = newTuple.join(leftTuple, rightTuple, schema);
+					//rightTuple=rightItr.getNext();
+					start();
+					return newTuple;
+				}
+				if(rightTupleValue > leftTupleValue || rightTupleValue < leftTupleValue){
+				//	System.out.println("in the rightTupleValue");
+					if(rightItr.hasNext()==false){
+					//	System.out.println("in false");
+						start();
+						break;
+					}else{
+						rightTuple = rightItr.getNext();
+					}
+				}
+			}
+		}
+	}
+	
+	public void start(){
+		//System.out.println("in the break");
+		rightItr.restart();
+		rightTuple=rightItr.getNext();
+		
+	}
+
+}
